@@ -21,21 +21,21 @@ namespace VisualNewton
 
         public void show(System.Windows.Forms.PaintEventArgs e)
         {
-            Axes(e);
+            drawAxes(e);
 
             float h = (xmax - xmin) / N;
             for (int i = 0; i <= N; ++i)
             {
-                float x_1 = xmin + i * h,
-                    y_1 = f(x_1),
-                    x_2 = xmin + (i + 1) * h,
-                    y_2 = f(x_2);
+                float x1 = xmin + i * h,
+                    y1 = f(x1),
+                    x2 = xmin + (i + 1) * h,
+                    y2 = f(x2);
 
                 e.Graphics.DrawLine
                 (
                     new System.Drawing.Pen(System.Drawing.Color.Blue),
-                    new System.Drawing.PointF(xi(x_1), eta(y_1)),
-                    new System.Drawing.PointF(xi(x_2), eta(y_2))
+                    new System.Drawing.PointF(xi(x1), eta(y1)),
+                    new System.Drawing.PointF(xi(x2), eta(y2))
                 );
             }
         }
@@ -74,7 +74,7 @@ namespace VisualNewton
             }
         }
 
-        private void Axes(System.Windows.Forms.PaintEventArgs e)
+        private void drawAxes(System.Windows.Forms.PaintEventArgs e)
         {
             System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Black);
             

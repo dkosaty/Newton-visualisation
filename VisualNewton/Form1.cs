@@ -30,8 +30,8 @@ namespace VisualNewton
             graph.show(e);
 
             int iters = 0;
-            float x_0 = 0.5f, eps = 1E-3f;
-            float sol = newton.Visualisation(e, x_0, eps, ref iters);
+            float x0 = 0.5f, eps = 1E-3f;
+            float sol = newton.visualize(e, x0, eps, ref iters);
 
             Console.WriteLine("sol = {0}, iters = {1}", sol, iters);
         }
