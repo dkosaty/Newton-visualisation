@@ -6,23 +6,40 @@ using System.Threading.Tasks;
 
 namespace VisualNewton
 {    
-    class Newton : Graph
+    class Newton : IMarking
     {
-        public Newton(Graph graph) : base(graph.PictureBox, graph.PointsNum, graph.Func, graph.Xmin, graph.Xmax) { }
-
-        private float df(Function f, float x)
+        public Newton(System.Windows.Forms.PictureBox pictureBox, Function function)
         {
-            float delta = 1E-6f;
-            return (f(x + delta) - f(x - delta)) / (2 * delta);
+            _pictureBox = pictureBox;
+            _function = function;
         }
 
-        public float visualize(System.Windows.Forms.PaintEventArgs e, float x0, float eps, ref int iters) 
+        public virtual float Xi(float x)
         {
+            int width = _pictureBox.Width;
+
+            float xmin = _function.Xmin, xmax = _function.Xmax;
+
+            return width * (1 - (xmax - x) / (xmax - xmin));
+        }
+
+        public virtual float Eta(float y)
+        {
+            int height = _pictureBox.Height;
+
+            float ymin = _function.Ymin, ymax = _function.Ymax;
+
+            return height * (ymax - y) / (ymax - ymin);
+        }
+
+        public float Visualize(System.Windows.Forms.PaintEventArgs e, float x0, float eps, ref int iters) 
+        {
+            Func f = _function.Func;
+
             System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red);
 
-            Function f = base.Func;
-
             float xnew = x0, x;
+
             do
             {
                 x = xnew;
@@ -30,17 +47,17 @@ namespace VisualNewton
                 e.Graphics.DrawLine
                 (
                     pen,
-                    new System.Drawing.PointF(xi(x), eta(0)),
-                    new System.Drawing.PointF(xi(x), eta(f(x)))
+                    new System.Drawing.PointF(Xi(x), Eta(0)),
+                    new System.Drawing.PointF(Xi(x), Eta(f(x)))
                 );
 
-                xnew = x - f(x) / df(f, x);
+                xnew = x - f(x) / df(x);
 
                 e.Graphics.DrawLine
                 (
                     pen,
-                    new System.Drawing.PointF(xi(x), eta(f(x))),
-                    new System.Drawing.PointF(xi(xnew), eta(0))
+                    new System.Drawing.PointF(Xi(x), Eta(f(x))),
+                    new System.Drawing.PointF(Xi(xnew), Eta(0))
                 );
 
                 Console.WriteLine("{0}, {1}", x, xnew);
@@ -50,5 +67,18 @@ namespace VisualNewton
 
             return xnew;
         }
+
+        private float df(float x)
+        {
+            Func f = _function.Func;
+
+            float delta = 1E-6f;
+
+            return (f(x + delta) - f(x - delta)) / (2 * delta);
+        }
+
+        private System.Windows.Forms.PictureBox _pictureBox;
+
+        private Function _function;
     }
 }

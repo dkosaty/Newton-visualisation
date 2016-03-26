@@ -6,25 +6,46 @@ using System.Threading.Tasks;
 
 namespace VisualNewton
 {
-    class Graph
+    class Graph : IMarking
     {
-        public Graph(System.Windows.Forms.PictureBox pictureBox, int N, Function f, float xmin, float xmax)
+        public Graph(System.Windows.Forms.PictureBox pictureBox, Function function)
         {
-            this.pictureBox = pictureBox;
-            this.N = N;
-            this.f = f;
-            this.xmin = xmin;
-            this.xmax = xmax;
-
-            setExtrema();
+            _pictureBox = pictureBox;
+            _function = function;
         }
 
-        public void show(System.Windows.Forms.PaintEventArgs e)
+        public virtual float Xi(float x)
         {
-            drawAxes(e);
+            int width = _pictureBox.Width;
 
-            float h = (xmax - xmin) / N;
-            for (int i = 0; i <= N; ++i)
+            float xmin = _function.Xmin, xmax = _function.Xmax;
+
+            return width * (1 - (xmax - x) / (xmax - xmin));
+        }
+
+        public virtual float Eta(float y)
+        {
+            int height = _pictureBox.Height;
+
+            float ymin = _function.Ymin, ymax = _function.Ymax;
+
+            return height * (ymax - y) / (ymax - ymin);
+        }
+
+        public void Show(System.Windows.Forms.PaintEventArgs e)
+        {
+            int pointsNumber = _function.PointsNumber;
+
+            System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Blue);
+
+            DrawAxes(e);
+
+            Func f = _function.Func;
+
+            float xmin = _function.Xmin, xmax = _function.Xmax,
+                h = (xmax - xmin) / pointsNumber;
+
+            for (int i = 0; i <= pointsNumber; ++i)
             {
                 float x1 = xmin + i * h,
                     y1 = f(x1),
@@ -33,72 +54,36 @@ namespace VisualNewton
 
                 e.Graphics.DrawLine
                 (
-                    new System.Drawing.Pen(System.Drawing.Color.Blue),
-                    new System.Drawing.PointF(xi(x1), eta(y1)),
-                    new System.Drawing.PointF(xi(x2), eta(y2))
+                    pen,
+                    new System.Drawing.PointF(Xi(x1), Eta(y1)),
+                    new System.Drawing.PointF(Xi(x2), Eta(y2))
                 );
             }
         }
 
-        public float xi(float x) { return pictureBox.Width * (1 - (xmax - x) / (xmax - xmin)); }
-
-        public float eta(float y) { return pictureBox.Height * (ymax - y) / (ymax - ymin); }
-
-        public System.Windows.Forms.PictureBox PictureBox { get { return pictureBox; } }
-
-        public int PointsNum { get { return N; } }
-
-        public Function Func { get { return f; } }
-
-        public float Xmin { get { return xmin; } }
-
-        public float Xmax { get { return xmax; } }
-
-        private void setExtrema()
+        private void DrawAxes(System.Windows.Forms.PaintEventArgs e)
         {
-            ymin = f(xmin);
-            ymax = ymin;
+            float xmin = _function.Xmin, xmax = _function.Xmax, ymin = _function.Ymin, ymax = _function.Ymax;
 
-            float h = (xmax - xmin) / N;
-
-            for (int i = 0; i <= N; ++i)
-            {
-                float x = xmin + i * h,
-                    y = f(x);
-
-                if (y < ymin)
-                    ymin = y;
-
-                if (y > ymax)
-                    ymax = y;
-            }
-        }
-
-        private void drawAxes(System.Windows.Forms.PaintEventArgs e)
-        {
             System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Black);
-            
+
             e.Graphics.DrawLine
             (
-                pen, 
-                new System.Drawing.PointF(xi(xmin), eta(0)), 
-                new System.Drawing.PointF(xi(xmax), eta(0))
+                pen,
+                new System.Drawing.PointF(Xi(xmin), Eta(0)),
+                new System.Drawing.PointF(Xi(xmax), Eta(0))
             );
 
             e.Graphics.DrawLine
             (
                 pen,
-                new System.Drawing.PointF(xi(0), eta(ymin)),
-                new System.Drawing.PointF(xi(0), eta(ymax))
+                new System.Drawing.PointF(Xi(0), Eta(ymin)),
+                new System.Drawing.PointF(Xi(0), Eta(ymax))
             );
         }
 
-        private System.Windows.Forms.PictureBox pictureBox;
+        private System.Windows.Forms.PictureBox _pictureBox;
 
-        private int N;
-
-        private Function f;
-        
-        private float xmin, xmax, ymin, ymax;
+        private Function _function;
     }
 }
