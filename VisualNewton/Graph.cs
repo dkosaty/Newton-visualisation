@@ -6,39 +6,23 @@ using System.Threading.Tasks;
 
 namespace VisualNewton
 {
-    class Graph : IMarking
+    class Graph
     {
-        public Graph(System.Windows.Forms.PictureBox pictureBox, Function function)
+        public Graph(System.Windows.Forms.PictureBox pictureBox, Xi xi, Eta eta, Function function)
         {
             _pictureBox = pictureBox;
+            _xi = xi;
+            _eta = eta;
             _function = function;
-        }
-
-        public virtual float Xi(float x)
-        {
-            int width = _pictureBox.Width;
-
-            float xmin = _function.Xmin, xmax = _function.Xmax;
-
-            return width * (1 - (xmax - x) / (xmax - xmin));
-        }
-
-        public virtual float Eta(float y)
-        {
-            int height = _pictureBox.Height;
-
-            float ymin = _function.Ymin, ymax = _function.Ymax;
-
-            return height * (ymax - y) / (ymax - ymin);
         }
 
         public void Show(System.Windows.Forms.PaintEventArgs e)
         {
             int pointsNumber = _function.PointsNumber;
 
-            System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Blue);
-
             DrawAxes(e);
+
+            System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Blue);
 
             Func f = _function.Func;
 
@@ -55,8 +39,8 @@ namespace VisualNewton
                 e.Graphics.DrawLine
                 (
                     pen,
-                    new System.Drawing.PointF(Xi(x1), Eta(y1)),
-                    new System.Drawing.PointF(Xi(x2), Eta(y2))
+                    new System.Drawing.PointF(_xi(x1), _eta(y1)),
+                    new System.Drawing.PointF(_xi(x2), _eta(y2))
                 );
             }
         }
@@ -70,19 +54,23 @@ namespace VisualNewton
             e.Graphics.DrawLine
             (
                 pen,
-                new System.Drawing.PointF(Xi(xmin), Eta(0)),
-                new System.Drawing.PointF(Xi(xmax), Eta(0))
+                new System.Drawing.PointF(_xi(xmin), _eta(0)),
+                new System.Drawing.PointF(_xi(xmax), _eta(0))
             );
 
             e.Graphics.DrawLine
             (
                 pen,
-                new System.Drawing.PointF(Xi(0), Eta(ymin)),
-                new System.Drawing.PointF(Xi(0), Eta(ymax))
+                new System.Drawing.PointF(_xi(0), _eta(ymin)),
+                new System.Drawing.PointF(_xi(0), _eta(ymax))
             );
         }
 
         private System.Windows.Forms.PictureBox _pictureBox;
+        
+        private Xi _xi;
+
+        private Eta _eta;
 
         private Function _function;
     }

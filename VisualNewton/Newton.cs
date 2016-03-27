@@ -6,37 +6,44 @@ using System.Threading.Tasks;
 
 namespace VisualNewton
 {    
-    class Newton : IMarking
+    class Newton
     {
-        public Newton(System.Windows.Forms.PictureBox pictureBox, Function function)
+        public Newton(Function function)
         {
-            _pictureBox = pictureBox;
             _function = function;
         }
 
-        public virtual float Xi(float x)
+        public void Visualize(System.Windows.Forms.PictureBox pictureBox, Xi xi, Eta eta, 
+            System.Windows.Forms.PaintEventArgs e, List<Tuple<float, float>> values)
         {
-            int width = _pictureBox.Width;
+            System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red);
 
-            float xmin = _function.Xmin, xmax = _function.Xmax;
-
-            return width * (1 - (xmax - x) / (xmax - xmin));
-        }
-
-        public virtual float Eta(float y)
-        {
-            int height = _pictureBox.Height;
-
-            float ymin = _function.Ymin, ymax = _function.Ymax;
-
-            return height * (ymax - y) / (ymax - ymin);
-        }
-
-        public float Visualize(System.Windows.Forms.PaintEventArgs e, float x0, float eps, ref int iters) 
-        {
             Func f = _function.Func;
 
-            System.Drawing.Pen pen = new System.Drawing.Pen(System.Drawing.Color.Red);
+            foreach (Tuple<float, float> record in values)
+            {
+                float x = record.Item1, xnew = record.Item2;
+
+                e.Graphics.DrawLine
+                (
+                    pen,
+                    new System.Drawing.PointF(xi(x), eta(0)),
+                    new System.Drawing.PointF(xi(x), eta(f(x)))
+                );
+
+
+                e.Graphics.DrawLine
+                (
+                    pen,
+                    new System.Drawing.PointF(xi(x), eta(f(x))),
+                    new System.Drawing.PointF(xi(xnew), eta(0))
+                );
+            }
+        }
+
+        public float Approximate(float x0, float eps, ref int iterations, ref List<Tuple<float, float>> values)
+        {
+            Func f = _function.Func;
 
             float xnew = x0, x;
 
@@ -44,25 +51,13 @@ namespace VisualNewton
             {
                 x = xnew;
 
-                e.Graphics.DrawLine
-                (
-                    pen,
-                    new System.Drawing.PointF(Xi(x), Eta(0)),
-                    new System.Drawing.PointF(Xi(x), Eta(f(x)))
-                );
-
                 xnew = x - f(x) / df(x);
 
-                e.Graphics.DrawLine
-                (
-                    pen,
-                    new System.Drawing.PointF(Xi(x), Eta(f(x))),
-                    new System.Drawing.PointF(Xi(xnew), Eta(0))
-                );
+                values.Add(new Tuple<float, float>(x, xnew));
 
                 Console.WriteLine("{0}, {1}", x, xnew);
 
-                ++iters;
+                ++iterations;
             } while (Math.Abs(xnew - x) > eps);
 
             return xnew;
@@ -76,8 +71,6 @@ namespace VisualNewton
 
             return (f(x + delta) - f(x - delta)) / (2 * delta);
         }
-
-        private System.Windows.Forms.PictureBox _pictureBox;
 
         private Function _function;
     }
